@@ -1,12 +1,29 @@
+local name, address = ...
+
+local function poll()
+    ws.send(textutils.serializeJSON({
+        name = name,
+        status = redstone.getOutput("right"),
+        value = chest.list()
+    }))
+end
+
+local function toggle()
+    redstone.setOutput("right", not redstone.getOutput("right"))
+end
+
+local decision_table = {
+    ["poll"] = poll,
+    ["toggle"] = toggle
+}
+
 local function serve()
     while true do
+        local request = ""
         repeat
-            local request = ws.receive()
-        until request == "1"
-        ws.send(textutils.serializeJSON({
-            name = "chest",
-            value = chest.list()
-        }))
+            request = ws.receive()
+        until request ~= ""
+        pcall(decision_table[request])
     end
 end
 
@@ -16,8 +33,8 @@ local function wait_for_q()
     until key == keys.q
 end
 
-ws = http.websocket("ws://127.0.0.1:8080/sensor")
-chest = peripheral.find("minecraft:chest")
+local ws = http.websocket(address)
+local chest = peripheral.find("minecraft:chest")
 
 parallel.waitForAny(serve, wait_for_q)
 
