@@ -33,8 +33,8 @@ local function wait_for_q()
     until key == keys.q
 end
 
-local ws = http.websocket(address)
-local chest = peripheral.find("minecraft:chest")
+ws = http.websocket(address)
+chest = peripheral.find("minecraft:chest")
 
 parallel.waitForAny(serve, wait_for_q)
 
